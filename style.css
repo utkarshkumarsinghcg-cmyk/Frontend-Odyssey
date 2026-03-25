@@ -1,0 +1,275 @@
+:root {
+    --color-saffron: #FF9933;
+    --color-white: #FFFFFF;
+    --color-green: #138808;
+    --color-isro-blue: #1E3A8A; /* Dark navy base */
+    --color-space-black: #050505;
+    --color-mars-red: #E27B58;
+    --color-text: #ffffff;
+    --glass-bg: rgba(255, 255, 255, 0.05);
+    --glass-border: rgba(255, 255, 255, 0.1);
+    --accent-glow: rgba(255, 153, 51, 0.3); /* Saffron glow */
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Outfit', sans-serif;
+    color: var(--color-text);
+    overflow-x: hidden;
+    line-height: 1.6;
+    background-color: var(--color-space-black);
+}
+
+/* Three.js Canvas Container */
+#bg-canvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: -1;
+}
+
+#app {
+    width: 100%;
+}
+
+/* Progress Bar (Tricolor) */
+.progress-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    z-index: 1000;
+}
+
+.progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #138808, #FFFFFF 50%, #FF9933);
+    width: 0%;
+    box-shadow: 0 0 10px var(--accent-glow);
+}
+
+/* HUD Overlay */
+.hud {
+    position: fixed;
+    top: 2rem;
+    left: 2rem;
+    z-index: 900;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    pointer-events: none;
+}
+
+.hud-item {
+    font-size: 0.7rem;
+    letter-spacing: 1px;
+    background: var(--glass-bg);
+    padding: 0.6rem 1.2rem;
+    border-left: 3px solid var(--color-saffron);
+    backdrop-filter: blur(10px);
+    transition: border-color 0.5s ease;
+    display: flex;
+    flex-direction: column;
+    min-width: 160px;
+}
+
+.hud-label {
+    opacity: 0.6;
+    margin-bottom: 2px;
+}
+
+.hud-value {
+    font-size: 1.2rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+}
+
+.hud-unit {
+    font-size: 0.6rem;
+    opacity: 0.5;
+    margin-left: 2px;
+}
+
+/* Sections */
+.mission-section {
+    position: relative;
+    height: 100vh;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+/* Content */
+.content-wrapper {
+    text-align: center;
+    max-width: 800px;
+    padding: 2rem;
+    z-index: 10;
+}
+
+h1, h2 {
+    font-size: clamp(3rem, 10vw, 6rem);
+    font-weight: 700;
+    margin-bottom: 1rem;
+    text-transform: uppercase;
+    letter-spacing: -2px;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+}
+
+p {
+    font-size: 1.2rem;
+    font-weight: 300;
+    opacity: 0.8;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+}
+
+/* Animations */
+.reveal-text {
+    opacity: 0;
+    transform: translateY(30px);
+}
+
+.scroll-indicator {
+    margin-top: 3rem;
+    font-size: 0.9rem;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    animation: bounce 2s infinite;
+    opacity: 0.6;
+}
+
+@keyframes bounce {
+    0%, 20%, 50%, 80%, 100% {transform: translateY(0);}
+    40% {transform: translateY(-10px);}
+    60% {transform: translateY(-5px);}
+}
+
+/* Glass UI */
+.glass {
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    backdrop-filter: blur(15px);
+    border-radius: 12px;
+}
+
+.mission-info-panel {
+    position: absolute;
+    bottom: 2rem;
+    right: 2rem;
+    padding: 1.5rem;
+    width: 250px;
+    transform: translateX(120%);
+    transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.mission-info-panel.visible {
+    transform: translateX(0);
+}
+
+.mission-info-panel h3 {
+    font-size: 1rem;
+    margin-bottom: 1rem;
+    text-transform: uppercase;
+    color: var(--color-saffron);
+}
+
+.mission-info-panel ul {
+    list-style: none;
+}
+
+.mission-info-panel li {
+    font-size: 0.8rem;
+    margin-bottom: 0.5rem;
+    display: flex;
+    justify-content: space-between;
+}
+
+/* Hotspots */
+.hotspots-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+}
+
+.hotspot {
+    position: absolute;
+    width: 40px;
+    height: 40px;
+    background: var(--color-green);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    cursor: pointer;
+    pointer-events: auto;
+    box-shadow: 0 0 20px rgba(19, 136, 8, 0.5);
+    animation: pulse 2s infinite;
+}
+
+.hotspot:nth-child(1) { top: 40%; left: 30%; background: var(--color-saffron); box-shadow: 0 0 20px rgba(255, 153, 51, 0.5); animation: pulseSaffron 2.5s infinite; }
+.hotspot:nth-child(2) { top: 60%; left: 70%; background: var(--color-white); color: #000; box-shadow: 0 0 20px rgba(255, 255, 255, 0.5); animation: pulseWhite 2.2s infinite; }
+
+@keyframes pulse {
+    0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(19, 136, 8, 0.7); }
+    70% { transform: scale(1.1); box-shadow: 0 0 0 15px rgba(19, 136, 8, 0); }
+    100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(19, 136, 8, 0); }
+}
+
+@keyframes pulseSaffron {
+    0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 153, 51, 0.7); }
+    70% { transform: scale(1.1); box-shadow: 0 0 0 15px rgba(255, 153, 51, 0); }
+    100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 153, 51, 0); }
+}
+
+@keyframes pulseWhite {
+    0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.7); }
+    70% { transform: scale(1.1); box-shadow: 0 0 0 15px rgba(255, 255, 255, 0); }
+    100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 255, 255, 0); }
+}
+
+#tooltip {
+    position: fixed;
+    padding: 1.2rem;
+    max-width: 250px;
+    font-size: 0.9rem;
+    z-index: 1100;
+    pointer-events: none;
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    backdrop-filter: blur(15px);
+    border-radius: 8px;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    transform: translateY(10px);
+    opacity: 0;
+    color: white;
+}
+
+#tooltip.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .hud { top: 1rem; left: 1rem; }
+    h1, h2 { font-size: 3rem; }
+    .mission-info-panel {
+        width: calc(100% - 2rem);
+        left: 1rem;
+        bottom: 1rem;
+    }
+}
