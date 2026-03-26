@@ -130,12 +130,24 @@ const BUBBLES_SM = Array.from({ length: 55 }, (_, i) => ({
 }));
 
 // Sub spotlight particles
-const SUB_PARTICLES = Array.from({ length: 12 }, (_, i) => ({
-  id: i, size: 1 + (i % 3),
-  dur: `${3 + (i * 0.5) % 4}s`,
+const SUB_PARTICLES = Array.from({ length: 15 }, (_, i) => ({
+  id: i, size: 1.5 + (i % 3),
+  dur: `${2 + (i * 0.5) % 4}s`,
   delay: `${-(i * 0.4) % 5}s`,
-  dx: `${-20 - (i * 8) % 60}px`,
-  dy: `${((i % 5) - 2) * 15}px`,
+  dx: `${-30 - (i * 12) % 150}px`,
+  dy: `${((i % 7) - 3) * 20}px`,
+}));
+
+// Floating micro particles
+const MICRO_PARTICLES = Array.from({ length: 40 }, (_, i) => ({
+  id: i,
+  left: `${(i * 3.7) % 100}%`,
+  top: `${(i * 2.3) % 100}%`,
+  size: 1 + (i % 2),
+  dur: `${12 + (i % 10)}s`,
+  delay: `${-(i % 5)}s`,
+  dx: `${((i % 5) - 2) * 15}px`,
+  dy: `${-10 - (i % 10)}px`,
 }));
 
 /* ── PLANT CONFIGS ── */
@@ -170,7 +182,9 @@ export default function OceanJourney() {
   const spotRef            = useRef(null);
   const fogRef             = useRef(null);
   const twilightFogRef     = useRef(null);
+  const bgHazeRef          = useRef(null);
   const maxDescentRef      = useRef(0); 
+  const prevZoneRef        = useRef(0);
   const depthTextRef       = useRef(null);
   const hudDepthFillRef    = useRef(null);
   const hudProgressFillRef = useRef(null);
@@ -214,9 +228,18 @@ export default function OceanJourney() {
         ease: 'none',
         onUpdate: () => {
           const p = scrollProxy.p;
-          
           if (depthTextRef.current) {
-            depthTextRef.current.innerText = Math.round(p * 4000) + 'm';
+            const currentDepth = Math.round(p * 4000);
+            depthTextRef.current.innerText = currentDepth + 'm';
+            
+            // Depth pulse check
+            const currentZone = ZONE_MARKERS.findIndex(m => p >= m.pct);
+            if (currentZone !== prevZoneRef.current) {
+               prevZoneRef.current = currentZone;
+               depthTextRef.current.classList.remove('depth-pulse');
+               void depthTextRef.current.offsetWidth;
+               depthTextRef.current.classList.add('depth-pulse');
+            }
           }
 
           const maxDesc = maxDescentRef.current || window.innerHeight * 7.2;
@@ -235,13 +258,17 @@ export default function OceanJourney() {
           );
 
           if (spotRef.current) {
-            spotRef.current.style.transform = `translate3d(-50%, ${screenPos}px, 0)`;
+            spotRef.current.style.transform = `translate3d(-50%, calc(${screenPos}px - 250px), 0)`;
             spotRef.current.style.opacity = Math.min(1, p * 10).toString();
           }
 
           if (particlesWrapRef.current) {
             particlesWrapRef.current.style.transform = `translate3d(0, ${screenPos}px, 0)`;
             particlesWrapRef.current.style.opacity = Math.min(0.7, p * 8).toString();
+          }
+          
+          if (bgHazeRef.current) {
+            bgHazeRef.current.style.transform = `scale(${1 + p * 0.05})`;
           }
 
           if (fogRef.current) {
@@ -321,7 +348,19 @@ export default function OceanJourney() {
       {/* ── FIXED ATMOSPHERE LAYERS ─── */}
       <div className="vignette"/>
       <div className="depth-fog-overlay" ref={fogRef}/>
-      <div className="parallax-bg-haze"/>
+      <div className="parallax-bg-haze" ref={bgHazeRef}/>
+      
+      {/* ── MICRO PARTICLES ── */}
+      <div className="micro-part-container" style={{ position: 'fixed', inset: 0, zIndex: 3, pointerEvents: 'none' }}>
+        {MICRO_PARTICLES.map((p) => (
+          <div key={p.id} className="micro-particle" style={{
+            left: p.left, top: p.top,
+            width: p.size, height: p.size,
+            '--dur': p.dur, '--delay': p.delay,
+            '--dx': p.dx, '--dy': p.dy
+          }}/>
+        ))}
+      </div>
 
       {/* ── FIXED HUD ─────────────────── */}
       <div className="hud-depth">
@@ -351,7 +390,7 @@ export default function OceanJourney() {
 
       {/* ── SUBMARINE SPOTLIGHT (fixed, tracks sub) ── */}
       <div className="submarine-spotlight" ref={spotRef}
-        style={{ width: 380, height: 380, top: 0, left: 'calc(50% - 120px)' }}/>
+        style={{ top: 0, left: 'calc(50% - 100px - 700px)' }}/>
 
       {/* ── SPOTLIGHT PARTICLES ── */}
       <div ref={particlesWrapRef} style={{ position: 'fixed', top: 0, left: 0, width: '100%', pointerEvents: 'none', zIndex:101 }}>
@@ -527,8 +566,9 @@ export default function OceanJourney() {
               <div key={i} className="plant-svg-wrap"
                 style={{
                   left:`${left}%`, zIndex: 5+i%3,
-                  '--sway-delay': `${i*0.35}s`,
-                  '--sway-dur': `${2.5+i*0.3}s`,
+                  '--sway-delay': `${Math.random() * 2}s`,
+                  '--sway-dur': `${2.5 + Math.random() * 2}s`,
+                  '--random-r': 0.8 + Math.random() * 0.4
                 }}
                 onClick={e => openCard(plantKey(type), e)}>
                 {type==='seaweed' && <Seaweed height={h} id={i} color={['#1a7a3a','#1a6a30','#258a40'][i%3]}/>}
@@ -547,8 +587,9 @@ export default function OceanJourney() {
               <div key={i} className="plant-svg-wrap"
                 style={{
                   left:`${left}%`, zIndex:5+i%3,
-                  '--sway-delay': `${i*0.28}s`,
-                  '--sway-dur': `${2.2+i*0.25}s`,
+                  '--sway-delay': `${Math.random() * 2}s`,
+                  '--sway-dur': `${2.2 + Math.random() * 2}s`,
+                  '--random-r': 0.8 + Math.random() * 0.4
                 }}
                 onClick={e => openCard(plantKey(type),e)}>
                 {type==='seaweed' && <Seaweed height={h} id={i+8} color={['#1a7a3a','#158832','#22993a'][i%3]}/>}

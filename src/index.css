@@ -188,6 +188,15 @@ body {
   99% { opacity: 0.8; }
 }
 
+@keyframes depthPulse {
+  0% { text-shadow: 0 0 14px var(--cyan); transform: scale(1); }
+  50% { text-shadow: 0 0 30px #fff, 0 0 50px var(--cyan); transform: scale(1.1); color: #fff; }
+  100% { text-shadow: 0 0 14px var(--cyan); transform: scale(1); }
+}
+.depth-pulse {
+  animation: depthPulse 1s ease-out;
+}
+
 .hud-depth-bar {
   width: 2px; height: 160px;
   background: rgba(0,245,255,0.1);
@@ -287,23 +296,21 @@ body {
    SUBMARINE SPOTLIGHT — Volumetric cone with flicker
    ===================================================== */
 .submarine-spotlight {
-  position: fixed;
-  pointer-events: none;
-  z-index: 100;
-  border-radius: 50%;
-  background: radial-gradient(ellipse at center,
-    rgba(220,245,255,0.22) 0%,
-    rgba(140,210,255,0.12) 25%,
-    rgba(60,150,255,0.06) 55%,
-    rgba(0,80,200,0.02) 75%,
+  position: fixed; pointer-events: none; z-index: 100;
+  width: 700px !important; height: 500px !important;
+  background: radial-gradient(ellipse at 100% 50%,
+    rgba(230,248,255,0.45) 0%,
+    rgba(180,230,255,0.25) 30%,
+    rgba(100,180,255,0.12) 60%,
+    rgba(40,120,255,0.04) 80%,
     transparent 100%
   );
+  clip-path: polygon(0 0, 100% 48%, 100% 52%, 0 100%);
   mix-blend-mode: screen;
-  transform: translate(-50%, -50%);
-  animation: spotFlicker 4s ease-in-out infinite;
-  transition: left 0.8s cubic-bezier(0.25,0.46,0.45,0.94),
-              top 0.8s cubic-bezier(0.25,0.46,0.45,0.94),
-              opacity 0.5s ease;
+  transform-origin: 100% 50%;
+  will-change: transform, opacity;
+  transform: translateZ(0);
+  animation: spotFlicker 3s ease-in-out infinite;
 }
 
 @keyframes spotFlicker {
@@ -585,8 +592,8 @@ body {
 }
 
 @keyframes plantSway {
-  0%, 100% { transform: rotate(var(--sway-start, -4deg)) skewX(-1deg); }
-  50% { transform: rotate(var(--sway-end, 4deg)) skewX(1deg); }
+  0%, 100% { transform: rotate(calc(var(--sway-start, -4deg) * var(--random-r, 1))) skewX(-1deg); }
+  50% { transform: rotate(calc(var(--sway-end, 4deg) * var(--random-r, 1))) skewX(1deg); }
 }
 
 .sway-fast {
@@ -660,10 +667,10 @@ body {
 }
 
 @keyframes bubbleFloat {
-  0% { transform: translateY(0) translateX(0) scale(1); opacity: 0; }
+  0% { transform: translate3d(0,0,0) scale(1); opacity: 0; }
   8% { opacity: 0.75; }
   85% { opacity: 0.3; }
-  100% { transform: translateY(-100vh) translateX(var(--drift, 20px)) scale(0.5); opacity: 0; }
+  100% { transform: translate3d(var(--drift, 40px), -100vh, 0) scale(0.5); opacity: 0; }
 }
 
 /* Particles inside submarine spotlight */
@@ -702,6 +709,25 @@ body {
   50% { transform: translate(var(--dx, 30px), var(--dy, -60px)); }
 }
 
+/* Micro floating particles */
+.micro-particle {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(180, 240, 255, 0.4);
+  will-change: transform, opacity;
+  animation: microDrift var(--dur, 20s) ease-in-out var(--delay, 0s) infinite, blink 4s ease-in-out infinite alternate;
+}
+
+@keyframes microDrift {
+  0% { transform: translate3d(0, 0, 0); }
+  50% { transform: translate3d(var(--dx, 20px), var(--dy, -30px), 0); }
+  100% { transform: translate3d(0, 0, 0); }
+}
+
+@keyframes blink {
+  from { opacity: 0.1; } to { opacity: 0.6; }
+}
+
 /* =====================================================
    MARINE LIFE — Enhanced interactions
    ===================================================== */
@@ -715,8 +741,8 @@ body {
 }
 
 .creature-wrapper:hover {
-  filter: drop-shadow(0 0 24px rgba(0,245,255,0.9)) brightness(1.35);
-  transform: scale(1.06);
+  filter: drop-shadow(0 0 30px rgba(0,245,255,0.8)) brightness(1.3);
+  transform: scale(1.08) translateZ(0);
 }
 
 .creature-glow-active {
@@ -810,7 +836,8 @@ body {
 }
 
 @keyframes fadeInModal {
-  from { opacity: 0; } to { opacity: 1; }
+  from { opacity: 0; transform: scale(0.95); backdrop-filter: blur(0px); }
+  to { opacity: 1; transform: scale(1); backdrop-filter: blur(14px); }
 }
 
 .info-card-inner {
